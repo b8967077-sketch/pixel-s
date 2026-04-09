@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+
+  <style>
+    body {
+      background:#020617;
+      color:white;
+      text-align:center;
+      font-family:Arial;
+    }
+
+    table {
+      width:90%;
+      margin:auto;
+      border-collapse:collapse;
+    }
+
+    td, th {
+      border:1px solid #444;
+      padding:8px;
+    }
+
+    button {
+      background:red;
+      color:white;
+      border:none;
+      padding:5px 10px;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🛠️ Admin Panel</h1>
+
+<table id="table">
+  <tr>
+    <th>ID</th>
+    <th>Action</th>
+  </tr>
+</table>
+
+<script>
+fetch("/admin/pixels")
+.then(res => res.json())
+.then(data => {
+
+  const table = document.getElementById("table");
+
+  Object.keys(data).forEach(id => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${id}</td>
+      <td>
+        <button onclick="deletePixel(${id})">Delete</button>
+      </td>
+    `;
+
+    table.appendChild(row);
+  });
+
+});
+
+function deletePixel(id) {
+  fetch("/admin/delete", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({id})
+  }).then(() => location.reload());
+}
+</script>
+
+</body>
+</html>

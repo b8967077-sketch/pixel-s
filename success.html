@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body style="background:#020617;color:white;text-align:center">
+
+<h2>⏳ جاري التحقق من الدفع...</h2>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const session_id = params.get("session_id");
+
+fetch("/verify-payment?session_id="+session_id)
+.then(r=>r.text())
+.then(t=>{
+
+  if(t==="saved"){
+    alert("🎉 تم حفظ المربع!");
+  } else {
+    alert("❌ الدفع لم يكتمل");
+  }
+
+  window.location = "index.html";
+});
+</script>
+
+</body>
+</html>
