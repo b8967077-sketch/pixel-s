@@ -2,23 +2,17 @@
 <html>
 <body style="background:#020617;color:white;text-align:center">
 
-<h2>⏳ جاري التحقق من الدفع...</h2>
+<h2>⏳ جاري التحقق...</h2>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const session_id = params.get("session_id");
+const p = new URLSearchParams(location.search);
+const id = p.get("session_id");
 
-fetch("/verify-payment?session_id="+session_id)
+fetch("/verify-payment?session_id="+id)
 .then(r=>r.text())
 .then(t=>{
-
-  if(t==="saved"){
-    alert("🎉 تم حفظ المربع!");
-  } else {
-    alert("❌ الدفع لم يكتمل");
-  }
-
-  window.location = "index.html";
+  alert(t==="saved" ? "🎉 تم الحفظ" : "❌ فشل");
+  location="index.html";
 });
 </script>
 

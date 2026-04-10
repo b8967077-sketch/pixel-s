@@ -2,26 +2,60 @@ const express = require("express");
 const fs = require("fs");
 const Stripe = require("stripe");
 
-const stripe = Stripe("sk_test_51TJh3OCVNgIhHwoDhMdh41p79j1aQ0OOBiOCTi7T6Wxa7JCKt0LGijTLJvWz9sFIR6Mofx3yisreXh5KFFoQM4WD00eBD6mASf"); // حط مفتاحك
+const stripe = Stripe("sk_test_51TKOR7BG30xtTBQx3M9LjWzqp5WVDaS4kcEuYRh3mekP3P9VO4zM9dnbaYIBrSJcHDwnwVzJAOknsAu1ljozir1U007fZSAMtZ");
 
 const app = express();
-
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// تحميل
-let pixels = fs.existsSync("data.json") ? JSON.parse(fs.readFileSync("data.json")) : {};
+// 🔥 تحميل أو إنشاء
+let users = {};
+let pixels = {};
+
+try{
+  users = JSON.parse(fs.readFileSync("users.json"));
+}catch{}
+
+try{
+  pixels = JSON.parse(fs.readFileSync("data.json"));
+}catch{}
 
 function save(){
+  fs.writeFileSync("users.json", JSON.stringify(users));
   fs.writeFileSync("data.json", JSON.stringify(pixels));
 }
 
-// جلب
+// 📝 تسجيل
+app.post("/register",(req,res)=>{
+  const {username,password} = req.body;
+
+  if(!username || !password) return res.send("EMPTY");
+
+  if(users[username]) return res.send("EXISTS");
+
+  users[username] = {password};
+  save();
+
+  res.send("OK");
+});
+
+// 🔐 تسجيل دخول
+app.post("/login",(req,res)=>{
+  const {username,password} = req.body;
+
+  if(users[username] && users[username].password === password){
+    res.send("OK");
+  } else {
+    res.send("NO");
+  }
+});
+
+// 📦 جلب المربعات
 app.get("/pixels",(req,res)=>{
   res.json(pixels);
 });
 
-// إنشاء الدفع
+// 💳 الدفع
 app.post("/create-checkout-session", async (req,res)=>{
 
   const {id, link, image, owner} = req.body;
@@ -40,14 +74,14 @@ app.post("/create-checkout-session", async (req,res)=>{
 
     metadata:{ id, link, image, owner },
 
-    success_url:"https://pixel-project.onrender.com/success.html"
-    ,cancel_url:"http://localhost:3000"
+    success_url:"https://YOUR-SITE.onrender.com/success.html?session_id={CHECKOUT_SESSION_ID}",
+    cancel_url:"https://YOUR-SITE.onrender.com"
   });
 
   res.json({url:session.url});
 });
 
-// ✅ التحقق بعد الدفع (بدون webhook)
+// ✅ تحقق بعد الدفع
 app.get("/verify-payment", async (req,res)=>{
 
   const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
@@ -56,7 +90,7 @@ app.get("/verify-payment", async (req,res)=>{
 
     const {id, link, image, owner} = session.metadata;
 
-    pixels[id] = {link, image, owner};
+    pixels[id] = {link,image,owner};
     save();
 
     return res.send("saved");
@@ -66,5 +100,5 @@ app.get("/verify-payment", async (req,res)=>{
 });
 
 app.listen(3000,()=>{
-  console.log("🔥 READY http://localhost:3000/login.html");
+  console.log("🔥 https://pixel-s-4.onrender.com");
 });
